@@ -1,4 +1,4 @@
-import {Component, Inject, InjectionToken, OnInit, Optional} from '@angular/core';
+import {Component, Inject, InjectionToken, OnDestroy, OnInit, Optional} from '@angular/core';
 import {IconFaAddon} from 'projects/icon/src/lib/icon-fa-addon';
 import {IconFa} from 'projects/icon/src/lib/icon-fa';
 import {faEllipsisV} from '@fortawesome/free-solid-svg-icons/faEllipsisV';
@@ -16,6 +16,9 @@ import {StorageListService} from 'projects/storage/src/lib/storage-list.service'
 import {EventBusService} from 'projects/event/src/lib/event-bus.service';
 import {SelectHelpEvent} from 'projects/help/src/lib/help-panel/select-help-event';
 import {HelpPageId} from 'projects/help/src/lib/help-panel/help-page-id';
+import {KeyBinding, KeyBindingsService} from 'projects/tools/src/lib/key-bindings.service';
+import {Subscription} from 'rxjs';
+import {KeyBoundMenuItem} from 'projects/storage/src/lib/storage-menu/menu-items/key-bound-menu-item';
 
 library.add(
   faEllipsisV,
@@ -37,7 +40,7 @@ export const STORAGE_TREE_LABEL = new InjectionToken<string>('StorageTreeLabel')
     CopyPasteService,
   ]
 })
-export class StorageTreeComponent implements OnInit {
+export class StorageTreeComponent implements OnInit, OnDestroy {
 
   // Icons
   readonly menuIcon = new IconFa(faEllipsisV, 'primary');
@@ -48,6 +51,7 @@ export class StorageTreeComponent implements OnInit {
 
   public contextualMenu: ComponentPortal<any>;
   public label: string;
+  private keyBindings: KeyBinding[] = [];
 
   constructor(public treeControl: StorageTreeControlService,
               public dataSource: StorageTreeDataSourceService,
@@ -55,14 +59,25 @@ export class StorageTreeComponent implements OnInit {
               @Inject(STORAGE_CONTEXTUAL_MENU) @Optional() contextualMenuType: any /*ComponentType<any>*/,
               @Inject(STORAGE_TREE_LABEL) @Optional() label: string,
               @Inject(STORAGE_ID) public id: string,
-              private eventBus: EventBusService) {
+              private eventBus: EventBusService,
+              private keys: KeyBindingsService) {
     dataSource.treeControl = treeControl;
     this.contextualMenu = new ComponentPortal<any>(contextualMenuType ? contextualMenuType : StorageContextualMenuComponent);
     this.label = label ? label : 'Files';
+    // TODO modifier le keybinding pour qu'il prenne une liste de String pour supporter IE ArrowUp / Up ...
+    this.keyBindings.push(new KeyBinding('ArrowUp', this.treeControl.upSelection.bind(this.treeControl), id));
   }
 
   ngOnInit() {
     this.dataSource.init();
+    this.keyBindings.forEach(binding => {
+      console.log('binding')
+      this.keys.add([binding]);
+    });
+  }
+
+  ngOnDestroy() {
+    this.keyBindings.forEach(binding => this.keys.remove([binding]));
   }
 
   selectHelpPage() {
