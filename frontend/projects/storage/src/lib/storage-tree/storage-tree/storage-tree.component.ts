@@ -65,14 +65,13 @@ export class StorageTreeComponent implements OnInit, OnDestroy {
     this.contextualMenu = new ComponentPortal<any>(contextualMenuType ? contextualMenuType : StorageContextualMenuComponent);
     this.label = label ? label : 'Files';
     // TODO modifier le keybinding pour qu'il prenne une liste de String pour supporter IE ArrowUp / Up ...
-    this.keyBindings.push(new KeyBinding('ArrowUp', this.treeControl.upSelection.bind(this.treeControl), id));
-    this.keyBindings.push(new KeyBinding('ArrowDown', this.treeControl.downSelection.bind(this.treeControl), id));
+    this.keyBindings.push(new KeyBinding(['ArrowUp', 'Up'], this.treeControl.upSelection.bind(this.treeControl), id));
+    this.keyBindings.push(new KeyBinding(['ArrowDown', 'Down'], this.treeControl.downSelection.bind(this.treeControl), id));
   }
 
   ngOnInit() {
     this.dataSource.init();
     this.keyBindings.forEach(binding => {
-      console.log('binding')
       this.keys.add([binding]);
     });
   }
