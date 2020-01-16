@@ -66,6 +66,7 @@ export class StorageTreeComponent implements OnInit, OnDestroy {
     this.label = label ? label : 'Files';
     // TODO modifier le keybinding pour qu'il prenne une liste de String pour supporter IE ArrowUp / Up ...
     this.keyBindings.push(new KeyBinding('ArrowUp', this.treeControl.upSelection.bind(this.treeControl), id));
+    this.keyBindings.push(new KeyBinding('ArrowDown', this.treeControl.downSelection.bind(this.treeControl), id));
   }
 
   ngOnInit() {

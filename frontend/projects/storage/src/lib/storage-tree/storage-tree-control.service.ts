@@ -87,13 +87,44 @@ export class StorageTreeControlService extends FlatTreeControl<StorageNode> impl
     // Select index -1 if it isn't the root
     const nodes = this.dataSource.data;
     const lastIndex = _.indexOf(nodes, this._lastSelection);
-    console.log("Index !! : " + lastIndex)
-    // TODO gérer qu'il faut sélectionner l'index du prévious uniquement sinon il déplie les noeuds d'avnat et pas bien !!!
-    if ( lastIndex > 0 ) {
-      this.selectOne(nodes[lastIndex - 1]);
+    if (lastIndex > 0) {
+      const nodeToSelect = this.selectNextOpen(lastIndex, this.decrementIndex);
+      this.selectOne(nodeToSelect);
       return true;
     }
     return false;
+  }
+
+  public downSelection(): boolean {
+    // Find index of the current selection or the first node selected for multiple
+    // Select index -1 if it isn't the root
+    const nodes = this.dataSource.data;
+    const lastIndex = _.indexOf(nodes, this._lastSelection);
+    if (lastIndex > 0) {
+      this.selectOne(this.selectNextOpen(lastIndex, this.incrementIndex));
+      return true;
+    }
+    return false;
+  }
+
+  private incrementIndex(index: number): number {
+    return index + 1;
+  }
+
+  private decrementIndex(index: number): number {
+    return index - 1;
+  }
+
+  private selectNextOpen(index: number, getNextIndex: Function): StorageNode {
+    const nodes = this.dataSource.data;
+    const nodeToSelect = nodes[getNextIndex(index)];
+    if (index > 0) {
+      const parent = this.dataSource.parentNode(nodeToSelect);
+      if (!this.isExpanded(parent)) {
+        return this.selectNextOpen(getNextIndex(index), getNextIndex);
+      }
+    }
+    return nodeToSelect;
   }
 
   public clearExpansion() {
